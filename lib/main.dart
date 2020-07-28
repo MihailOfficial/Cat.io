@@ -93,7 +93,7 @@ class MyGame extends BaseGame {
       baseSpeed: const Offset(20, 0), layerDelta: const Offset(30, 0));
   MyGame(Size size){
 
-add(Bg());
+
     add(parallaxComponent);
     add(cat = Cat());
   }
