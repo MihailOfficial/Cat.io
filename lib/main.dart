@@ -69,6 +69,7 @@ class Cat extends AnimationComponent with Resizable {
     this.angle = velocity.angle();
     if (y > size.height){
       reset();
+      frozen = true;
     }
   }
   onTap(){
