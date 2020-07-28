@@ -46,7 +46,7 @@ flutter:
   # the material Icons class.
   uses-material-design: true
   assets:
-    - assets/images/cat.png
+    - assets/images/catimage.png
     - assets/images/background.png
     - assets/images/bg.png
     - assets/images/mountain-far.png
