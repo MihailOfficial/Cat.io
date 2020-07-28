@@ -3,6 +3,7 @@ import 'package:flame/animation.dart';
 import 'package:flame/components/animation_component.dart';
 import 'package:flame/components/component.dart';
 import 'package:flame/components/mixins/resizable.dart';
+import 'package:flame/components/parallax_component.dart';
 import 'package:flame/game/base_game.dart';
 import 'package:flame/position.dart';
 import 'package:flutter/cupertino.dart';
@@ -13,10 +14,10 @@ const GRAVITY = 400.0;
 const BOOST = -380;
 
 void main() async {
-WidgetsFlutterBinding.ensureInitialized();
-final size = await Flame.util.initialDimensions();
-final game = MyGame(size);
-runApp(game.widget);
+  WidgetsFlutterBinding.ensureInitialized();
+  final size = await Flame.util.initialDimensions();
+  final game = MyGame(size);
+  runApp(game.widget);
 
 }
 
@@ -26,7 +27,7 @@ class Bg extends Component with Resizable {
 
   @override
   void render(Canvas c) {
-    c.drawRect(Rect.fromLTWH(0.0, 0.0, size.width, size.height), _paint);
+    c.drawRect(Rect.fromLTWH(0.0, 0.0, 50, 50), _paint);
   }
 
   @override
@@ -81,8 +82,19 @@ class Cat extends AnimationComponent with Resizable {
 
 class MyGame extends BaseGame {
   Cat cat;
+  static List<ParallaxImage> images = [
+    ParallaxImage("bg.png"),
+    ParallaxImage("mountain-far.png"),
+    ParallaxImage("mountains.png"),
+    ParallaxImage("trees.png"),
+    ParallaxImage("foreground-trees.png"),
+  ];
+  final parallaxComponent = ParallaxComponent(images,
+      baseSpeed: const Offset(20, 0), layerDelta: const Offset(30, 0));
   MyGame(Size size){
-    add(Bg());
+
+add(Bg());
+    add(parallaxComponent);
     add(cat = Cat());
   }
   @override
@@ -90,6 +102,3 @@ class MyGame extends BaseGame {
     cat.onTap();
   }
 }
-
-
-
