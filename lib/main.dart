@@ -1,4 +1,5 @@
 //nword
+
 import 'package:flame/anchor.dart';
 import 'package:flame/animation.dart';
 import 'package:flame/components/animation_component.dart';
@@ -12,6 +13,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flame/flame.dart';
 import 'package:flutter/services.dart';
 import 'dart:math';
+import "package:normal/normal.dart";
+import "package:flame/time.dart";
 
 const COLOR = const Color(0xff0000ff);
 const SIZE = 52.0;
@@ -90,7 +93,7 @@ class Cat extends AnimationComponent with Resizable {
 }
 
 class Coin extends AnimationComponent with Resizable {
-  double speedX = 2.0;
+  double speedX = 200.0;
   double posX, posY;
 
   Coin(double posX, double posY)
@@ -112,13 +115,14 @@ class Coin extends AnimationComponent with Resizable {
       destroy();
     }
     super.update(t);
-    this.x -= speedX * 2;
+    this.x -= speedX * t;
   }
 }
 
 class MyGame extends BaseGame {
   var rng;
   Cat cat;
+  double timer;
 
   var coinPattern = [[true, false, true],
                      [false, true, false],
@@ -137,7 +141,9 @@ class MyGame extends BaseGame {
     add(parallaxComponent);
     add(cat = Cat());
     this.rng = new Random();
+    this.timer = Normal.quantile(rng.nextDouble(), mean: 2, variance: 0.5);
   }
+
   @override
   void onTapDown(TapDownDetails details) {
     cat.onTap();
@@ -150,12 +156,16 @@ class MyGame extends BaseGame {
 
   void update(double t) {
     super.update(t);
-    if(rng.nextInt(1000) < (1000.0/(60.0 * 1.2))){
+    timer -= t;
+    if(timer < 0){
+      timer = Normal.quantile(rng.nextDouble(), mean: 0, variance: 1) + 6.0;
+
+
       double height = rng.nextDouble() * (size.height - 30.0 * coinPattern.length);
       for(var i = 0; i < coinPattern.length; i++){
         for(var j = 0; j < coinPattern[i].length; j++){
           if(coinPattern[j][i]){
-            add(new Coin(size.width + j * 30.0, height + i * 30.0));
+            add(new Coin(size.width + j * 30.0 + 10, height + i * 30.0));
           }
         }
       }
