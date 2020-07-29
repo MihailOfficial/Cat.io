@@ -41,7 +41,10 @@ dev_dependencies:
 
 # The following section is specific to Flutter.
 flutter:
-
+  fonts:
+  - family: pixelfont
+    fonts:
+      - asset: assets/fonts/Minecraft.ttf
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.
@@ -56,6 +59,9 @@ flutter:
     - assets/images/foreground-trees.png
     - assets/images/coin.png
     - assets/images/cat.png
+    - assets/images/bg-trees.png
+    - assets/images/bg-mountains.png
+    - assets/images/bg-clouds.png
   # - assets/images/sprites_final.png
   # To add assets to your application, add an assets section, like this:
   # assets:
