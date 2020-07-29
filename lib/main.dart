@@ -1,3 +1,5 @@
+
+
 import 'package:flame/anchor.dart';
 import 'package:flame/animation.dart';
 import 'package:flame/components/animation_component.dart';
@@ -6,18 +8,24 @@ import 'package:flame/components/mixins/resizable.dart';
 import 'package:flame/components/parallax_component.dart';
 import 'package:flame/game/base_game.dart';
 import 'package:flame/position.dart';
+import 'package:flame/sprite.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flame/flame.dart';
+import 'package:flutter/services.dart';
+
 const COLOR = const Color(0xff0000ff);
 const SIZE = 52.0;
 const GRAVITY = 400.0;
-const BOOST = -380;
+const BOOST = -300;
+
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
   final size = await Flame.util.initialDimensions();
   final game = MyGame(size);
   runApp(game.widget);
+
 
 }
 
@@ -37,6 +45,7 @@ class Bg extends Component with Resizable {
 }
 
 class Cat extends AnimationComponent with Resizable {
+
   double speedY = 0.0;
   bool frozen;
   Cat() : super.sequenced(
@@ -51,8 +60,6 @@ class Cat extends AnimationComponent with Resizable {
     speedY = 0;
     angle = 0.0;
   }
-
-
 
   @override
   void resize(Size size) {
@@ -77,13 +84,42 @@ class Cat extends AnimationComponent with Resizable {
       frozen = false;
       return;
     }
-    speedY = (speedY + BOOST).clamp(BOOST, speedY);
+    speedY = speedY + BOOST;
   }
 }
 
+class Coin extends AnimationComponent with Resizable {
+  double speedX = 2.0;
+
+  Coin() : super.sequenced(SIZE, SIZE, 'coin.png', 1, textureWidth: 200.0, textureHeight: 200.0) {
+    this.anchor = Anchor.center;
+
+
+  }
+  reset(){
+    this.x = size.width;
+
+    angle = 0.0;
+
+  }
+  @override
+  void update (double t){
+    if (x < 0){
+      reset();
+    }
+    super.update(t);
+    this.x -= speedX * 2;
+    this.y = tester;
+  }
+
+
+
+}
+ double tester = 200.0;
 class MyGame extends BaseGame {
   Cat cat;
-  static List<ParallaxImage> images = [
+
+ static List<ParallaxImage> images = [
     ParallaxImage("bg.png"),
     ParallaxImage("mountain-far.png"),
     ParallaxImage("mountains.png"),
@@ -95,11 +131,32 @@ class MyGame extends BaseGame {
   MyGame(Size size){
 
 
-    add(parallaxComponent);
-    add(cat = Cat());
+   add(parallaxComponent);
+
+
+   add(cat = Cat());
+
+
+     Coin coin= new Coin();
+     add(coin);
+
+
+
+
+
   }
   @override
   void onTap(){
     cat.onTap();
+
   }
+  @override
+  void resize(Size size) {
+    super.resize(size);
+
+  }
+
+  void update (double t){
+    super.update(t);
+}
 }
