@@ -51,8 +51,8 @@ class Cat extends AnimationComponent with Resizable {
   double speedY = 0.0;
   bool frozen;
   Cat()
-      : super.sequenced(SIZE * 2, SIZE * 2, 'catimage.png', 3,
-            textureWidth: 34.0, textureHeight: 34.0) {
+      : super.sequenced(SIZE * 2, SIZE * 2, 'walking (32 x 32).png', 6,
+            textureWidth: 32.0, textureHeight: 32.0) {
     this.anchor = Anchor.center;
     this.frozen = true;
   }
