@@ -18,7 +18,7 @@ import "package:flame/time.dart";
 
 const COLOR = const Color(0xff0000ff);
 const SIZE = 52.0;
-const GRAVITY = 700.0;
+const GRAVITY = 900.0;
 const BOOST = -300;
 
 void main() async {
@@ -73,7 +73,7 @@ class Cat extends AnimationComponent with Resizable {
   void update(double t) {
     super.update(t);
     if (!frozen) {
-      this.y += speedY * t - GRAVITY * t * t / 2;
+      this.y += speedY * t; // - GRAVITY * t * t / 2
       this.speedY += GRAVITY * t;
       this.angle = velocity.angle();
       if (y > size.height || y < 0) {
@@ -123,10 +123,17 @@ class MyGame extends BaseGame {
   var rng;
   Cat cat;
   double timer;
-
-  var coinPattern = [[true, false, true],
-                     [false, true, false],
-                     [true, false, true]];
+  List coinPatterns = [];
+  var coinPattern1 = [[1, 0, 1],
+                      [0, 1, 0],
+                      [1, 0, 1]];
+  var coinPattern2 = [[1, 0, 0],
+                      [0, 1, 0],
+                      [0, 0, 1]];
+  var coinPattern3 = [[0, 1, 0],
+                      [1, 0, 1],
+                      [0, 1, 0]];
+  var coinPattern4 = [[1, 1, 1, 1, 1, 1]];
 
   static List<ParallaxImage> images = [
     ParallaxImage("bg.png"),
@@ -142,6 +149,11 @@ class MyGame extends BaseGame {
     add(cat = Cat());
     this.rng = new Random();
     this.timer = Normal.quantile(rng.nextDouble(), mean: 2, variance: 0.5);
+    coinPatterns.add(coinPattern1);
+    coinPatterns.add(coinPattern2);
+    coinPatterns.add(coinPattern3);
+    coinPatterns.add(coinPattern4);
+    print(coinPatterns);
   }
 
   @override
@@ -159,13 +171,14 @@ class MyGame extends BaseGame {
     timer -= t;
     if(timer < 0){
       timer = Normal.quantile(rng.nextDouble(), mean: 0, variance: 1) + 6.0;
-
-
-      double height = rng.nextDouble() * (size.height - 30.0 * coinPattern.length);
+      int pattern = rng.nextInt(coinPatterns.length);
+      print(pattern);
+      var coinPattern = coinPatterns[pattern];
+      double height = rng.nextDouble() * (size.height - 30.0 * coinPattern.length - 10.0);
       for(var i = 0; i < coinPattern.length; i++){
         for(var j = 0; j < coinPattern[i].length; j++){
-          if(coinPattern[j][i]){
-            add(new Coin(size.width + j * 30.0 + 10, height + i * 30.0));
+          if(coinPattern[i][j] == 1){
+            add(new Coin(size.width + j * 30.0 + 10, height + i * 30.0 + 10));
           }
         }
       }
