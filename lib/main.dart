@@ -47,6 +47,7 @@ class Cat extends AnimationComponent with Resizable {
       : super.sequenced(SIZE * 2, SIZE * 2, 'catimage.png', 3,
             textureWidth: 34.0, textureHeight: 34.0) {
     this.anchor = Anchor.center;
+    this.frozen = true;
   }
 
   Position get velocity => Position(300.0, speedY);
@@ -92,10 +93,12 @@ class Coin extends AnimationComponent with Resizable {
   double speedX = 2.0;
   double posX, posY;
 
-  Coin()
+  Coin(double posX, double posY)
       : super.sequenced(SIZE, SIZE, 'coin.png', 1,
             textureWidth: 200.0, textureHeight: 200.0) {
     this.anchor = Anchor.center;
+    this.x = posX;
+    this.y = posY;
   }
   reset() {
     this.x = size.width;
@@ -106,18 +109,21 @@ class Coin extends AnimationComponent with Resizable {
   @override
   void update(double t) {
     if (x < 0) {
-      reset();
+      destroy();
     }
     super.update(t);
     this.x -= speedX * 2;
-    this.y = tester;
   }
 }
 
-double tester = 200.0;
-
 class MyGame extends BaseGame {
+  var rng;
   Cat cat;
+
+  var coinPattern = [[true, false, true],
+                     [false, true, false],
+                     [true, false, true]];
+
   static List<ParallaxImage> images = [
     ParallaxImage("bg.png"),
     ParallaxImage("mountain-far.png"),
@@ -130,8 +136,7 @@ class MyGame extends BaseGame {
   MyGame(Size size) {
     add(parallaxComponent);
     add(cat = Cat());
-    Coin coin = new Coin();
-    add(coin);
+    this.rng = new Random();
   }
   @override
   void onTapDown(TapDownDetails details) {
@@ -145,6 +150,15 @@ class MyGame extends BaseGame {
 
   void update(double t) {
     super.update(t);
-
+    if(rng.nextInt(1000) < (1000.0/(60.0 * 1.2))){
+      double height = rng.nextDouble() * (size.height - 30.0 * coinPattern.length);
+      for(var i = 0; i < coinPattern.length; i++){
+        for(var j = 0; j < coinPattern[i].length; j++){
+          if(coinPattern[j][i]){
+            add(new Coin(size.width + j * 30.0, height + i * 30.0));
+          }
+        }
+      }
+    }
   }
 }
