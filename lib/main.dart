@@ -1,3 +1,4 @@
+//nword
 import 'package:flame/anchor.dart';
 import 'package:flame/animation.dart';
 import 'package:flame/components/animation_component.dart';
@@ -10,10 +11,11 @@ import 'package:flame/sprite.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flame/flame.dart';
 import 'package:flutter/services.dart';
+import 'dart:math';
 
 const COLOR = const Color(0xff0000ff);
 const SIZE = 52.0;
-const GRAVITY = 400.0;
+const GRAVITY = 700.0;
 const BOOST = -300;
 
 void main() async {
@@ -88,6 +90,7 @@ class Cat extends AnimationComponent with Resizable {
 
 class Coin extends AnimationComponent with Resizable {
   double speedX = 2.0;
+  double posX, posY;
 
   Coin()
       : super.sequenced(SIZE, SIZE, 'coin.png', 1,
@@ -115,7 +118,6 @@ double tester = 200.0;
 
 class MyGame extends BaseGame {
   Cat cat;
-
   static List<ParallaxImage> images = [
     ParallaxImage("bg.png"),
     ParallaxImage("mountain-far.png"),
@@ -143,5 +145,6 @@ class MyGame extends BaseGame {
 
   void update(double t) {
     super.update(t);
+
   }
 }
