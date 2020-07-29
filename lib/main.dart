@@ -1,5 +1,3 @@
-
-
 import 'package:flame/anchor.dart';
 import 'package:flame/animation.dart';
 import 'package:flame/components/animation_component.dart';
@@ -18,20 +16,16 @@ const SIZE = 52.0;
 const GRAVITY = 400.0;
 const BOOST = -300;
 
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   final size = await Flame.util.initialDimensions();
   final game = MyGame(size);
   runApp(game.widget);
-
-
 }
 
 class Bg extends Component with Resizable {
-  static final Paint _paint = Paint()
-    ..color = COLOR;
+  static final Paint _paint = Paint()..color = COLOR;
 
   @override
   void render(Canvas c) {
@@ -45,20 +39,21 @@ class Bg extends Component with Resizable {
 }
 
 class Cat extends AnimationComponent with Resizable {
-
   double speedY = 0.0;
   bool frozen;
-  Cat() : super.sequenced(
-      SIZE*2, SIZE*2, 'catimage.png', 3, textureWidth: 34.0, textureHeight: 34.0) {
+  Cat()
+      : super.sequenced(SIZE * 2, SIZE * 2, 'catimage.png', 3,
+            textureWidth: 34.0, textureHeight: 34.0) {
     this.anchor = Anchor.center;
   }
 
   Position get velocity => Position(300.0, speedY);
-  reset(){
+  reset() {
     this.x = size.width / 2;
     this.y = size.height / 2;
     speedY = 0;
     angle = 0.0;
+    frozen = true;
   }
 
   @override
@@ -67,59 +62,61 @@ class Cat extends AnimationComponent with Resizable {
     reset();
     frozen = true;
   }
+
   @override
-  void update (double t){
+  void update(double t) {
     super.update(t);
-    if (frozen) return;
-    this.y += speedY * t - GRAVITY*t*t/2;
-    this.speedY += GRAVITY * t;
-    this.angle = velocity.angle();
-    if (y > size.height){
-      reset();
-      frozen = true;
+    if (!frozen) {
+      this.y += speedY * t - GRAVITY * t * t / 2;
+      this.speedY += GRAVITY * t;
+      this.angle = velocity.angle();
+      if (y > size.height || y < 0) {
+        reset();
+      }
     }
   }
-  onTap(){
-    if (frozen){
+
+  onTap() {
+    if (frozen) {
       frozen = false;
       return;
     }
     speedY = speedY + BOOST;
+    //speedY = -300;
   }
 }
 
 class Coin extends AnimationComponent with Resizable {
   double speedX = 2.0;
 
-  Coin() : super.sequenced(SIZE, SIZE, 'coin.png', 1, textureWidth: 200.0, textureHeight: 200.0) {
+  Coin()
+      : super.sequenced(SIZE, SIZE, 'coin.png', 1,
+            textureWidth: 200.0, textureHeight: 200.0) {
     this.anchor = Anchor.center;
-
-
   }
-  reset(){
+  reset() {
     this.x = size.width;
 
     angle = 0.0;
-
   }
+
   @override
-  void update (double t){
-    if (x < 0){
+  void update(double t) {
+    if (x < 0) {
       reset();
     }
     super.update(t);
     this.x -= speedX * 2;
     this.y = tester;
   }
-
-
-
 }
- double tester = 200.0;
+
+double tester = 200.0;
+
 class MyGame extends BaseGame {
   Cat cat;
 
- static List<ParallaxImage> images = [
+  static List<ParallaxImage> images = [
     ParallaxImage("bg.png"),
     ParallaxImage("mountain-far.png"),
     ParallaxImage("mountains.png"),
@@ -128,35 +125,23 @@ class MyGame extends BaseGame {
   ];
   final parallaxComponent = ParallaxComponent(images,
       baseSpeed: const Offset(20, 0), layerDelta: const Offset(30, 0));
-  MyGame(Size size){
-
-
-   add(parallaxComponent);
-
-
-   add(cat = Cat());
-
-
-     Coin coin= new Coin();
-     add(coin);
-
-
-
-
-
+  MyGame(Size size) {
+    add(parallaxComponent);
+    add(cat = Cat());
+    Coin coin = new Coin();
+    add(coin);
   }
   @override
-  void onTap(){
+  void onTapDown(TapDownDetails details) {
     cat.onTap();
-
   }
+
   @override
   void resize(Size size) {
     super.resize(size);
-
   }
 
-  void update (double t){
+  void update(double t) {
     super.update(t);
-}
+  }
 }
