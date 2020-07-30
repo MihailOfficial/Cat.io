@@ -52,10 +52,11 @@ class Cat extends AnimationComponent with Resizable {
   double speedY = 0.0;
   bool frozen;
   Cat()
-      : super.sequenced(SIZE * 2, SIZE * 2, 'walking (32 x 32).png', 6,
+      : super.sequenced(SIZE*1.5 , SIZE*1.5, 'Running (32 x 32).png', 6,
             textureWidth: 32.0, textureHeight: 32.0) {
     this.anchor = Anchor.center;
     this.frozen = true;
+    print("yes");
   }
 
   Position get velocity => Position(300.0, speedY);
@@ -169,7 +170,7 @@ class MyGame extends BaseGame {
 
     add(TextComponent('Score:')
 
-      ..anchor = Anchor.topCenter
+      ..anchor = Anchor.centerRight
       ..x = size.width / 2
       ..y = 32.0);
   }
