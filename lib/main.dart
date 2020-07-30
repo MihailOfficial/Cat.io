@@ -19,6 +19,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:math';
 
+
 const COLOR = const Color(0xff0000ff);
 const SIZE = 52.0;
 const GRAVITY = 700.0;
@@ -58,12 +59,15 @@ class Cat extends AnimationComponent with Resizable {
   }
 
   Position get velocity => Position(300.0, speedY);
+
+
   reset() {
     this.x = size.width / 2;
     this.y = size.height / 2;
     speedY = 0;
     angle = 0.0;
     frozen = true;
+
   }
 
   @override
@@ -72,6 +76,7 @@ class Cat extends AnimationComponent with Resizable {
     reset();
     frozen = true;
   }
+
 
   @override
   void update(double t) {
@@ -83,6 +88,8 @@ class Cat extends AnimationComponent with Resizable {
       if (y > size.height || y < 0) {
         reset();
       }
+      compx = this.x;
+      compy = this.y;
     }
   }
 
@@ -95,6 +102,9 @@ class Cat extends AnimationComponent with Resizable {
     //speedY = -300;
   }
 }
+double compx = 0.0;
+double compy = 0.0;
+double printer = 0.0;
 
 class Coin extends AnimationComponent with Resizable {
   double speedX = 2.0;
@@ -106,6 +116,7 @@ class Coin extends AnimationComponent with Resizable {
     this.anchor = Anchor.center;
     this.x = posX;
     this.y = posY;
+
   }
   reset() {
     this.x = size.width;
@@ -117,12 +128,22 @@ class Coin extends AnimationComponent with Resizable {
   void update(double t) {
     if (x < 0) {
       destroy();
+
+
+    }
+    double dist = sqrt((compy-y)*(compy-y) + (compx-x)*(compx-x));
+
+    if (dist < 45) {
+     this.x = -200000;
+      this.y = -200000;
+
     }
     super.update(t);
     this.x -= speedX * 2;
   }
 }
-TextConfig regular = TextConfig(color: BasicPalette.white.color, fontFamily: "pixelfont");
+
+
 class MyGame extends BaseGame {
   var rng;
   Cat cat;
@@ -145,7 +166,8 @@ class MyGame extends BaseGame {
     add(parallaxComponent);
     add(cat = Cat());
     this.rng = new Random();
-    add(TextComponent('Score: 0', config: regular)
+
+    add(TextComponent('Score:')
 
       ..anchor = Anchor.topCenter
       ..x = size.width / 2
@@ -164,6 +186,8 @@ class MyGame extends BaseGame {
 
   void update(double t) {
     super.update(t);
+
+
     if(rng.nextInt(1000) < (1000.0/(60.0 * 1.2))){
       double height = rng.nextDouble() * (size.height - 30.0 * coinPattern.length);
       for(var i = 0; i < coinPattern.length; i++){
@@ -175,5 +199,7 @@ class MyGame extends BaseGame {
         }
       }
     }
+
   }
+
 }
