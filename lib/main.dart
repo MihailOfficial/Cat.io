@@ -1,4 +1,5 @@
 //nword
+import 'dart:io';
 import 'dart:ui';
 
 import 'package:flame/anchor.dart';
@@ -49,19 +50,27 @@ class Bg extends Component with Resizable {
     // TODO: implement update
   }
 }
-
+String message;
+bool specialMessage = false;
+bool eliminateScoreFlash = false;
 class Cat extends AnimationComponent with Resizable {
   double speedY = 0.0;
   bool frozen;
   Cat()
       : super.sequenced(SIZE*1.5 , SIZE*1.5, 'Running (32 x 32).png', 6,
-            textureWidth: 32.0, textureHeight: 32.0) {
+      textureWidth: 32.0, textureHeight: 32.0) {
     this.anchor = Anchor.center;
     this.frozen = true;
-    print("yes");
+    specialMessage = true;
+    message = "Tap anywhere!";
+    updateScore = true;
+    eliminateScoreFlash = true;
   }
 
   Position get velocity => Position(300.0, speedY);
+
+
+
 
 
   reset() {
@@ -89,6 +98,10 @@ class Cat extends AnimationComponent with Resizable {
       this.speedY += GRAVITY * t;
       this.angle = velocity.angle();
       if (y > size.height || y < 0) {
+        specialMessage = true;
+        message = "You died!";
+        updateScore = true;
+        score = 0;
         reset();
       }
       compx = this.x;
@@ -97,6 +110,8 @@ class Cat extends AnimationComponent with Resizable {
   }
 
   onTap() {
+    specialMessage = false;
+    updateScore = true;
     if (frozen) {
       frozen = false;
       return;
@@ -115,7 +130,7 @@ class Coin extends AnimationComponent with Resizable {
 
   Coin(double posX, double posY)
       : super.sequenced(SIZE, SIZE, 'coin.png', 1,
-            textureWidth: 200.0, textureHeight: 200.0) {
+      textureWidth: 200.0, textureHeight: 200.0) {
     this.anchor = Anchor.center;
     this.x = posX;
     this.y = posY;
@@ -134,11 +149,11 @@ class Coin extends AnimationComponent with Resizable {
     double dist = sqrt((compy-y)*(compy-y) + (compx-x)*(compx-x));
 
     if (dist < 45) {
-     this.x = -200000;
-     this.y = -200000;
-     score++;
-     updateScore = true;
-     return;
+      this.x = -200000;
+      this.y = -200000;
+      score++;
+      updateScore = true;
+      return;
     }
     super.update(t);
     this.x -= speedX * t;
@@ -226,16 +241,38 @@ class MyGame extends BaseGame {
       }
     }
 
-    if(updateScore){
-      textPainter = TextPainter(text: TextSpan(text: "Score: " + score.toString(), style: TextStyle(color: Colors.white, fontFamily: "pixelFont", fontSize: 25)), textDirection: TextDirection.ltr);
-      textPainter.layout(
-        minWidth: 0,
-        maxWidth: size.width,
-      );
-      position = Offset(size.width / 2 - textPainter.width / 2, size.height * 0.05 - textPainter.height / 2);
-      updateScore = false;
+    if(updateScore) {
+      if (specialMessage) {
+        textPainter = TextPainter(text: TextSpan(
+            text: message,
+            style: TextStyle(
+                color: Colors.white, fontFamily: "pixelFont", fontSize: 25)),
+            textDirection: TextDirection.ltr);
+        textPainter.layout(
+          minWidth: 0,
+          maxWidth: size.width,
+        );
+        position = Offset(size.width / 2 - textPainter.width / 2,
+            size.height * 0.05 - textPainter.height / 2);
+        updateScore = false;
+      }
+      else if (eliminateScoreFlash){
+        textPainter = TextPainter(text: TextSpan(
+            text: "Score: " + score.toString(),
+            style: TextStyle(
+                color: Colors.white, fontFamily: "pixelFont", fontSize: 25)),
+            textDirection: TextDirection.ltr);
+        textPainter.layout(
+          minWidth: 0,
+          maxWidth: size.width,
+        );
+        position = Offset(size.width / 2 - textPainter.width / 2,
+            size.height * 0.05 - textPainter.height / 2);
+        updateScore = false;
+      }
+      }
     }
-  }
+
 
   @override
   void render(Canvas c){

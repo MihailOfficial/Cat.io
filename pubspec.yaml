@@ -63,6 +63,8 @@ flutter:
     - assets/images/bg-mountains.png
     - assets/images/bg-clouds.png
     - assets/images/Running (32 x 32).png
+    - assets/images/test.png
+    - assets/images/cointrial.png
   # - assets/images/sprites_final.png
   # To add assets to your application, add an assets section, like this:
   # assets:
