@@ -15,6 +15,7 @@ import 'package:flame/palette.dart';
 import 'package:flame/position.dart';
 import 'package:flame/sprite.dart';
 import 'package:flame/text_config.dart';
+import 'package:flame/util.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flame/flame.dart';
 import 'package:flutter/material.dart';
@@ -31,7 +32,8 @@ var score = 0;
 bool updateScore = false;
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
+  Util flameUtil = Util();
+  await flameUtil.fullScreen();
   final size = await Flame.util.initialDimensions();
   final game = MyGame(size);
   runApp(game.widget);
@@ -203,7 +205,7 @@ class MyGame extends BaseGame {
     coinPatterns.add(coinPattern3);
     coinPatterns.add(coinPattern4);
     coinPatterns.add(coinPattern5);
-    textPainter = TextPainter(text: TextSpan(text: "Score: " + score.toString(), style: TextStyle(color: Colors.white, fontFamily: "pixelFont", fontSize: 25)), textDirection: TextDirection.ltr);
+    textPainter = TextPainter(text: TextSpan(text: "Score: " + score.toString(), style: TextStyle(color: Colors.white, fontFamily: "pixelFont", fontSize: 32)), textDirection: TextDirection.ltr);
     textPainter.layout(
       minWidth: 0,
       maxWidth: size.width,
@@ -225,7 +227,7 @@ class MyGame extends BaseGame {
 
     timer -= t;
     if (timer < 0) {
-      timer = Normal.quantile(rng.nextDouble(), mean: 0, variance: 3) + 6.0;
+      timer = Normal.quantile(rng.nextDouble(), mean: 0, variance: 3) + 4.0;
       int pattern = rng.nextInt(coinPatterns.length);
       print(pattern);
       var coinPattern = coinPatterns[pattern];
@@ -246,7 +248,7 @@ class MyGame extends BaseGame {
         textPainter = TextPainter(text: TextSpan(
             text: message,
             style: TextStyle(
-                color: Colors.white, fontFamily: "pixelFont", fontSize: 25)),
+                color: Colors.white, fontFamily: "pixelFont", fontSize: 32)),
             textDirection: TextDirection.ltr);
         textPainter.layout(
           minWidth: 0,
@@ -260,7 +262,7 @@ class MyGame extends BaseGame {
         textPainter = TextPainter(text: TextSpan(
             text: "Score: " + score.toString(),
             style: TextStyle(
-                color: Colors.white, fontFamily: "pixelFont", fontSize: 25)),
+                color: Colors.white, fontFamily: "pixelFont", fontSize: 32)),
             textDirection: TextDirection.ltr);
         textPainter.layout(
           minWidth: 0,
