@@ -141,7 +141,9 @@ class Cat extends AnimationComponent with Resizable {
 double compx = 0.0;
 double compy = 0.0;
 double printer = 0.0;
-
+bool collected = false;
+double collectedX;
+double collectedY;
 class Coin extends AnimationComponent with Resizable {
   double speedX = 200.0;
   double posX, posY;
@@ -167,6 +169,9 @@ class Coin extends AnimationComponent with Resizable {
     double dist = sqrt((compy-y)*(compy-y) + (compx-x)*(compx-x));
 
     if (dist < 45) {
+      collected = true;
+      collectedX = this.x;
+      collectedY = this.y;
       this.x = -200000;
       this.y = -200000;
       score++;
@@ -181,6 +186,7 @@ class Coin extends AnimationComponent with Resizable {
     this.x -= speedX * t;
   }
 }
+
 class Snake extends AnimationComponent with Resizable {
   double speedX = 200.0;
   double posX = 0;
@@ -216,6 +222,39 @@ class Snake extends AnimationComponent with Resizable {
       snakeDeath = true;
       return;
     }
+    super.update(t);
+    this.x -= speedX * t;
+  }
+}
+
+
+class coinCollected extends AnimationComponent with Resizable {
+  double speedX = 200.0;
+  double posX = 0;
+  double posY;
+
+  coinCollected(double posX, double posY)
+      : super.sequenced(SIZE, SIZE, 'Collected.png', 6,
+      textureWidth: 32, textureHeight: 32) {
+    this.anchor = Anchor.center;
+    this.x = posX;
+    this.y = posY;
+
+
+  }
+
+
+  @override
+  void update(double t) {
+
+    if (x < 0) {
+      destroy();
+    }
+    double dist = sqrt((collectedY-y)*(collectedY-y) + (collectedX-x)*(collectedX-x));
+    if (dist>90){
+      this.x = 2000;
+    }
+
     super.update(t);
     this.x -= speedX * t;
   }
@@ -319,6 +358,10 @@ class MyGame extends BaseGame {
           }
         }
       }
+    }
+    if (collected){
+      add(new coinCollected(collectedX, collectedY));
+      collected = false;
     }
 
     if(updateScore) {
