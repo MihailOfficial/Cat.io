@@ -25,6 +25,7 @@ dependencies:
     sdk: flutter
   flame: ^0.20.1
   normal: ^0.5.1
+  shared_preferences: ^0.5.1+2
 
 
 
@@ -35,6 +36,7 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
+
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

@@ -23,6 +23,7 @@ import 'package:flutter/services.dart';
 import 'dart:math';
 import "package:normal/normal.dart";
 import "package:flame/time.dart";
+import 'package:shared_preferences/shared_preferences.dart';
 
 const COLOR = const Color(0xff0000ff);
 const SIZE = 52.0;
@@ -30,12 +31,17 @@ const GRAVITY = 700.0;
 const BOOST = -300;
 var score = 0;
 bool updateScore = false;
+int highScore = 0;
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  //SharedPreferences storage = await SharedPreferences.getInstance();
+
   Util flameUtil = Util();
   await flameUtil.fullScreen();
   final size = await Flame.util.initialDimensions();
   final game = MyGame(size);
+  //highScore = game.storage.getInt('highscore') ?? 0;
   runApp(game.widget);
 }
 
@@ -55,6 +61,7 @@ class Bg extends Component with Resizable {
 String message;
 bool specialMessage = false;
 bool eliminateScoreFlash = false;
+bool snakeDeath = false;
 class Cat extends AnimationComponent with Resizable {
   double speedY = 0.0;
   bool frozen;
@@ -67,6 +74,7 @@ class Cat extends AnimationComponent with Resizable {
     message = "Tap anywhere!";
     updateScore = true;
     eliminateScoreFlash = true;
+
   }
 
   Position get velocity => Position(300.0, speedY);
@@ -100,10 +108,16 @@ class Cat extends AnimationComponent with Resizable {
       this.speedY += GRAVITY * t;
       this.angle = velocity.angle();
       if (y > size.height || y < 0) {
+
         specialMessage = true;
         message = "You died!";
         updateScore = true;
         score = 0;
+        updatehighScore = true;
+        reset();
+      }
+      if (snakeDeath){
+        updatehighScore = true;
         reset();
       }
       compx = this.x;
@@ -114,6 +128,8 @@ class Cat extends AnimationComponent with Resizable {
   onTap() {
     specialMessage = false;
     updateScore = true;
+    updatehighScore = true;
+    snakeDeath = false;
     if (frozen) {
       frozen = false;
       return;
@@ -154,6 +170,10 @@ class Coin extends AnimationComponent with Resizable {
       this.x = -200000;
       this.y = -200000;
       score++;
+      if (score > highScore){
+        highScore = score;
+      }
+      updatehighScore = true;
       updateScore = true;
       return;
     }
@@ -161,14 +181,56 @@ class Coin extends AnimationComponent with Resizable {
     this.x -= speedX * t;
   }
 }
+class Snake extends AnimationComponent with Resizable {
+  double speedX = 200.0;
+  double posX = 0;
+  double posY;
 
+  Snake(double posX, double posY)
+      : super.sequenced(SIZE/1.4, SIZE/1.4, 'cat.png', 4,
+      textureWidth: 16, textureHeight: 16) {
+    this.anchor = Anchor.center;
+    this.x = posX;
+    this.y = posY;
+  }
+  reset() {
+    this.x = size.width;
+
+    angle = 0.0;
+  }
+
+  @override
+  void update(double t) {
+    if (x < 0) {
+      destroy();
+    }
+    double dist = sqrt((compy-y)*(compy-y) + (compx-x)*(compx-x));
+
+    if (dist < 45) {
+      this.x = -200000;
+      this.y = -200000;
+      score=0;
+      specialMessage = true;
+      message ="Snake death!";
+      updateScore = true;
+      snakeDeath = true;
+      return;
+    }
+    super.update(t);
+    this.x -= speedX * t;
+  }
+}
+bool updatehighScore = false;
 class MyGame extends BaseGame {
   var rng;
   Cat cat;
   double timer;
+  double timerS;
   List coinPatterns = [];
-  TextPainter textPainter;
-  Offset position;
+  TextPainter textPainterScore;
+  TextPainter textPainterHighScore;
+  Offset positionScore;
+  Offset positionHighScore;
 
   var coinPattern1 = [[1, 0, 1],
     [0, 1, 0],
@@ -200,17 +262,25 @@ class MyGame extends BaseGame {
     add(cat = Cat());
     this.rng = new Random();
     this.timer = Normal.quantile(rng.nextDouble(), mean: 2, variance: 0.5);
+    this.timerS = Normal.quantile(rng.nextDouble(), mean: 2, variance: 0.5);
     coinPatterns.add(coinPattern1);
     coinPatterns.add(coinPattern2);
     coinPatterns.add(coinPattern3);
     coinPatterns.add(coinPattern4);
     coinPatterns.add(coinPattern5);
-    textPainter = TextPainter(text: TextSpan(text: "Score: " + score.toString(), style: TextStyle(color: Colors.white, fontFamily: "pixelFont", fontSize: 32)), textDirection: TextDirection.ltr);
-    textPainter.layout(
+
+    textPainterScore = TextPainter(text: TextSpan(text: "Score: " + score.toString(), style: TextStyle(color: Colors.white, fontFamily: "pixelFont", fontSize: 32)), textDirection: TextDirection.ltr);
+    textPainterScore.layout(
       minWidth: 0,
       maxWidth: size.width,
     );
-    position = Offset(size.width / 2 - textPainter.width / 2, size.height * 0.05 - textPainter.height / 2);
+    positionScore = Offset(size.width / 2 - textPainterScore.width / 2, size.height * 0.020 - textPainterScore.height / 2);
+    textPainterHighScore = TextPainter(text: TextSpan(text: "High:" + score.toString(), style: TextStyle(color: Colors.yellow, fontFamily: "pixelFont", fontSize: 20)), textDirection: TextDirection.ltr);
+    textPainterHighScore.layout(
+      minWidth: 0,
+      maxWidth: size.width,
+    );
+    positionHighScore = Offset(size.width / 2 - textPainterHighScore.width / 2, size.height * 08 - textPainterHighScore.height / 2);
   }
   @override
   void onTapDown(TapDownDetails details) {
@@ -224,9 +294,17 @@ class MyGame extends BaseGame {
 
   void update(double t) {
     super.update(t);
-
     timer -= t;
+    timerS -= t;
+    if (timerS < 0) {
+      double posSnake = rng.nextDouble() * size.height;
+      add(new Snake( size.width, posSnake));
+
+      timerS = Normal.quantile(rng.nextDouble(), mean: 0, variance: 3) + 4.0;
+    }
     if (timer < 0) {
+
+
       timer = Normal.quantile(rng.nextDouble(), mean: 0, variance: 3) + 4.0;
       int pattern = rng.nextInt(coinPatterns.length);
       print(pattern);
@@ -244,42 +322,60 @@ class MyGame extends BaseGame {
     }
 
     if(updateScore) {
+
       if (specialMessage) {
-        textPainter = TextPainter(text: TextSpan(
+        textPainterScore = TextPainter(text: TextSpan(
             text: message,
             style: TextStyle(
                 color: Colors.white, fontFamily: "pixelFont", fontSize: 32)),
             textDirection: TextDirection.ltr);
-        textPainter.layout(
+        textPainterScore.layout(
           minWidth: 0,
           maxWidth: size.width,
         );
-        position = Offset(size.width / 2 - textPainter.width / 2,
-            size.height * 0.05 - textPainter.height / 2);
+        positionScore = Offset(size.width / 2 - textPainterScore.width / 2,
+            size.height * 0.05 - textPainterScore.height / 2);
         updateScore = false;
       }
       else if (eliminateScoreFlash){
-        textPainter = TextPainter(text: TextSpan(
+        textPainterScore = TextPainter(text: TextSpan(
             text: "Score: " + score.toString(),
             style: TextStyle(
                 color: Colors.white, fontFamily: "pixelFont", fontSize: 32)),
             textDirection: TextDirection.ltr);
-        textPainter.layout(
+        textPainterScore.layout(
           minWidth: 0,
           maxWidth: size.width,
         );
-        position = Offset(size.width / 2 - textPainter.width / 2,
-            size.height * 0.05 - textPainter.height / 2);
+        positionScore = Offset(size.width / 2 - textPainterScore.width / 2,
+            size.height * 0.05 - textPainterScore.height / 2);
         updateScore = false;
       }
       }
+    else if (updatehighScore) {
+
+      textPainterHighScore = TextPainter(text: TextSpan(
+          text: "High: " + highScore.toString(),
+          style: TextStyle(
+              color: Colors.yellow, fontFamily: "pixelFont", fontSize: 20)),
+          textDirection: TextDirection.ltr);
+      textPainterHighScore.layout(
+        minWidth: 0,
+        maxWidth: size.width,
+      );
+      positionHighScore = Offset(size.width / 2 - textPainterHighScore.width / 2,
+          size.height * 0.08 - textPainterHighScore.height / 2);
+      updatehighScore = false;
     }
+    }
+
 
 
   @override
   void render(Canvas c){
     super.render(c);
-    textPainter.paint(c, position);
+    textPainterScore.paint(c, positionScore);
+    textPainterHighScore.paint(c, positionHighScore);
   }
 
 }
