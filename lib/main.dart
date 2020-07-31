@@ -129,8 +129,8 @@ class Coin extends AnimationComponent with Resizable {
   double posX, posY;
 
   Coin(double posX, double posY)
-      : super.sequenced(SIZE, SIZE, 'coin.png', 1,
-      textureWidth: 200.0, textureHeight: 200.0) {
+      : super.sequenced(SIZE/1.4, SIZE/1.4, 'cointrial.png', 8,
+      textureWidth: 52.5, textureHeight: 54) {
     this.anchor = Anchor.center;
     this.x = posX;
     this.y = posY;
