@@ -187,8 +187,8 @@ class Snake extends AnimationComponent with Resizable {
   double posY;
 
   Snake(double posX, double posY)
-      : super.sequenced(SIZE/1.4, SIZE/1.4, 'cat.png', 4,
-      textureWidth: 16, textureHeight: 16) {
+      : super.sequenced(SIZE, SIZE, 'Spike.png', 8,
+      textureWidth: 38, textureHeight: 38) {
     this.anchor = Anchor.center;
     this.x = posX;
     this.y = posY;
@@ -211,7 +211,7 @@ class Snake extends AnimationComponent with Resizable {
       this.y = -200000;
       score=0;
       specialMessage = true;
-      message ="Snake death!";
+      message ="Sliced!";
       updateScore = true;
       snakeDeath = true;
       return;
@@ -300,7 +300,7 @@ class MyGame extends BaseGame {
       double posSnake = rng.nextDouble() * size.height;
       add(new Snake( size.width, posSnake));
 
-      timerS = Normal.quantile(rng.nextDouble(), mean: 0, variance: 3) + 4.0;
+      timerS = Normal.quantile(rng.nextDouble(), mean: 0, variance: 3) + 10.0;
     }
     if (timer < 0) {
 
