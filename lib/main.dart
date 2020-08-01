@@ -314,7 +314,7 @@ class MyGame extends BaseGame {
       maxWidth: size.width,
     );
     positionScore = Offset(size.width / 2 - textPainterScore.width / 2, size.height * 0.020 - textPainterScore.height / 2);
-    textPainterHighScore = TextPainter(text: TextSpan(text: "High:" + score.toString(), style: TextStyle(color: Colors.yellow, fontFamily: "pixelFont", fontSize: 20)), textDirection: TextDirection.ltr);
+    textPainterHighScore = TextPainter(text: TextSpan(text: "Highest:" + score.toString(), style: TextStyle(color: Colors.yellow, fontFamily: "pixelFont", fontSize: 20)), textDirection: TextDirection.ltr);
     textPainterHighScore.layout(
       minWidth: 0,
       maxWidth: size.width,
@@ -398,7 +398,7 @@ class MyGame extends BaseGame {
     else if (updatehighScore) {
 
       textPainterHighScore = TextPainter(text: TextSpan(
-          text: "High: " + highScore.toString(),
+          text: "Highest: " + highScore.toString(),
           style: TextStyle(
               color: Colors.yellow, fontFamily: "pixelFont", fontSize: 20)),
           textDirection: TextDirection.ltr);
