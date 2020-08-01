@@ -339,12 +339,12 @@ class MyGame extends BaseGame {
       double posSnake = rng.nextDouble() * size.height;
       add(new Snake( size.width, posSnake));
 
-      timerS = Normal.quantile(rng.nextDouble(), mean: 0, variance: 3) + 10.0;
+      timerS = Normal.quantile(rng.nextDouble(), mean: 0, variance: 0.3) + 1;
     }
     if (timer < 0) {
 
 
-      timer = Normal.quantile(rng.nextDouble(), mean: 0, variance: 3) + 4.0;
+      timer = Normal.quantile(rng.nextDouble(), mean: 0, variance: 0.15) + 0.5;
       int pattern = rng.nextInt(coinPatterns.length);
       print(pattern);
       var coinPattern = coinPatterns[pattern];
