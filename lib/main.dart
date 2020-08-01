@@ -32,7 +32,8 @@ const BOOST = -300;
 var score = 0;
 bool updateScore = false;
 int highScore = 0;
-
+int gemCollected = -1;
+MyGame game;
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   //SharedPreferences storage = await SharedPreferences.getInstance();
@@ -40,7 +41,7 @@ void main() async {
   Util flameUtil = Util();
   await flameUtil.fullScreen();
   final size = await Flame.util.initialDimensions();
-  final game = MyGame(size);
+  game = MyGame(size);
   //highScore = game.storage.getInt('highscore') ?? 0;
   runApp(game.widget);
 }
@@ -168,10 +169,11 @@ class Coin extends AnimationComponent with Resizable {
     }
     double dist = sqrt((compy-y)*(compy-y) + (compx-x)*(compx-x));
 
-    if (dist < 45) {
+    if (dist < 45 || gemCollected == 0) {
       collected = true;
       collectedX = this.x;
       collectedY = this.y;
+      game.add(new coinCollected(this.x, this.y));
       this.x = -200000;
       this.y = -200000;
       score++;
@@ -220,6 +222,7 @@ class Snake extends AnimationComponent with Resizable {
       message ="Sliced!";
       updateScore = true;
       snakeDeath = true;
+      gemCollected = 1;
       return;
     }
     super.update(t);
@@ -232,6 +235,7 @@ class coinCollected extends AnimationComponent with Resizable {
   double speedX = 200.0;
   double posX = 0;
   double posY;
+  double timeLeft = 0.1;
 
   coinCollected(double posX, double posY)
       : super.sequenced(SIZE, SIZE, 'Collected.png', 6,
@@ -239,22 +243,24 @@ class coinCollected extends AnimationComponent with Resizable {
     this.anchor = Anchor.center;
     this.x = posX;
     this.y = posY;
-
-
+    this.destroyOnFinish = true;
   }
 
 
   @override
   void update(double t) {
-
-    if (x < 0) {
-      destroy();
+    /*
+    if (timeLeft < 0) {
+      print("destroy");
+      this.destroy();
+    } else {
+      timeLeft -= t;
     }
     double dist = sqrt((collectedY-y)*(collectedY-y) + (collectedX-x)*(collectedX-x));
     if (dist>90){
       this.x = 2000;
     }
-
+    */
     super.update(t);
     this.x -= speedX * t;
   }
@@ -333,6 +339,9 @@ class MyGame extends BaseGame {
 
   void update(double t) {
     super.update(t);
+    if(gemCollected >= 0){
+      gemCollected--;
+    }
     timer -= t;
     timerS -= t;
     if (timerS < 0) {
@@ -360,8 +369,8 @@ class MyGame extends BaseGame {
       }
     }
     if (collected){
-      add(new coinCollected(collectedX, collectedY));
-      collected = false;
+      //add(new coinCollected(collectedX, collectedY));
+      //collected = false;
     }
 
     if(updateScore) {
