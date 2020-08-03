@@ -218,10 +218,44 @@ class Snake extends AnimationComponent with Resizable {
       this.x = -200000;
       this.y = -200000;
       score=0;
-      specialMessage = true;
-      message ="Sliced!";
       updateScore = true;
       snakeDeath = true;
+
+      return;
+    }
+    super.update(t);
+    this.x -= speedX * t;
+  }
+}
+class Gem extends AnimationComponent with Resizable {
+  double speedX = 200.0;
+  double posX = 0;
+  double posY;
+
+  Gem(double posX, double posY)
+      : super.sequenced(SIZE/1.3, SIZE/1.3, 'gemIcon.png', 4,
+      textureWidth: 16, textureHeight: 16) {
+    this.anchor = Anchor.center;
+    this.x = posX;
+    this.y = posY;
+  }
+  reset() {
+    this.x = size.width;
+    angle = 0.0;
+  }
+
+  @override
+  void update(double t) {
+    if (x < 0) {
+      destroy();
+    }
+    double dist = sqrt((compy-y)*(compy-y) + (compx-x)*(compx-x));
+
+    if (dist < 45) {
+      this.x = -200000;
+      this.y = -200000;
+
+      updateScore = true;
       gemCollected = 1;
       return;
     }
@@ -271,6 +305,7 @@ class MyGame extends BaseGame {
   Cat cat;
   double timer;
   double timerS;
+  double timerG;
   List coinPatterns = [];
   TextPainter textPainterScore;
   TextPainter textPainterHighScore;
@@ -308,6 +343,7 @@ class MyGame extends BaseGame {
     this.rng = new Random();
     this.timer = Normal.quantile(rng.nextDouble(), mean: 2, variance: 0.5);
     this.timerS = Normal.quantile(rng.nextDouble(), mean: 2, variance: 0.5);
+    this.timerG = Normal.quantile(rng.nextDouble(), mean: 3, variance: 0.7);
     coinPatterns.add(coinPattern1);
     coinPatterns.add(coinPattern2);
     coinPatterns.add(coinPattern3);
@@ -344,6 +380,13 @@ class MyGame extends BaseGame {
     }
     timer -= t;
     timerS -= t;
+    timerG -= t;
+    if (timerG < 0) {
+      double posGem = rng.nextDouble() * size.height;
+      add(new Gem( size.width, posGem));
+
+      timerG = Normal.quantile(rng.nextDouble(), mean: 0, variance: 0.7) + 2;
+    }
     if (timerS < 0) {
       double posSnake = rng.nextDouble() * size.height;
       add(new Snake( size.width, posSnake));
@@ -351,7 +394,6 @@ class MyGame extends BaseGame {
       timerS = Normal.quantile(rng.nextDouble(), mean: 0, variance: 0.3) + 1;
     }
     if (timer < 0) {
-
 
       timer = Normal.quantile(rng.nextDouble(), mean: 0, variance: 0.15) + 0.5;
       int pattern = rng.nextInt(coinPatterns.length);
