@@ -63,14 +63,15 @@ String message;
 bool specialMessage = false;
 bool eliminateScoreFlash = false;
 bool snakeDeath = false;
+bool frozen = true;
 class Cat extends AnimationComponent with Resizable {
   double speedY = 0.0;
-  bool frozen;
+
   Cat()
       : super.sequenced(SIZE*1.5 , SIZE*1.5, 'Running (32 x 32).png', 6,
       textureWidth: 32.0, textureHeight: 32.0) {
     this.anchor = Anchor.center;
-    this.frozen = true;
+    frozen = true;
     specialMessage = true;
     message = "Tap anywhere!";
     updateScore = true;
@@ -164,6 +165,9 @@ class Coin extends AnimationComponent with Resizable {
 
   @override
   void update(double t) {
+    if (frozen){
+      this.x = -200000;
+    }
     if (x < 0) {
       destroy();
     }
@@ -209,7 +213,10 @@ class Snake extends AnimationComponent with Resizable {
 
   @override
   void update(double t) {
-    if (x < 0) {
+    if (frozen){
+      this.x = -200000;
+    }
+    if (x < 0 ) {
       destroy();
     }
     double dist = sqrt((compy-y)*(compy-y) + (compx-x)*(compx-x));
@@ -246,6 +253,9 @@ class Gem extends AnimationComponent with Resizable {
 
   @override
   void update(double t) {
+    if (frozen){
+      this.x = -200000;
+    }
     if (x < 0) {
       destroy();
     }
@@ -350,19 +360,30 @@ class MyGame extends BaseGame {
     coinPatterns.add(coinPattern4);
     coinPatterns.add(coinPattern5);
 
-    textPainterScore = TextPainter(text: TextSpan(text: "Score: " + score.toString(), style: TextStyle(color: Colors.white, fontFamily: "pixelFont", fontSize: 32)), textDirection: TextDirection.ltr);
+    textPainterScore = TextPainter(text: TextSpan(
+        text: "Score: " + score.toString(),
+        style: TextStyle(
+            color: Colors.white, fontFamily: "pixelFont", fontSize: 32)),
+        textDirection: TextDirection.ltr);
     textPainterScore.layout(
       minWidth: 0,
       maxWidth: size.width,
     );
-    positionScore = Offset(size.width / 2 - textPainterScore.width / 2, size.height * 0.020 - textPainterScore.height / 2);
-    textPainterHighScore = TextPainter(text: TextSpan(text: "Highest:" + score.toString(), style: TextStyle(color: Colors.yellow, fontFamily: "pixelFont", fontSize: 20)), textDirection: TextDirection.ltr);
+    positionScore = Offset(size.width / 2 - textPainterScore.width / 2,
+        size.height * 0.020 - textPainterScore.height / 2);
+    textPainterHighScore = TextPainter(text: TextSpan(
+        text: "Highest:" + score.toString(),
+        style: TextStyle(
+            color: Colors.yellow, fontFamily: "pixelFont", fontSize: 20)),
+        textDirection: TextDirection.ltr);
     textPainterHighScore.layout(
       minWidth: 0,
       maxWidth: size.width,
     );
-    positionHighScore = Offset(size.width / 2 - textPainterHighScore.width / 2, size.height * 08 - textPainterHighScore.height / 2);
+    positionHighScore = Offset(size.width / 2 - textPainterHighScore.width / 2,
+        size.height * 08 - textPainterHighScore.height / 2);
   }
+
   @override
   void onTapDown(TapDownDetails details) {
     cat.onTap();
@@ -375,101 +396,99 @@ class MyGame extends BaseGame {
 
   void update(double t) {
     super.update(t);
-    if(gemCollected >= 0){
+    if (gemCollected >= 0) {
       gemCollected--;
     }
-    timer -= t;
-    timerS -= t;
-    timerG -= t;
-    if (timerG < 0) {
-      double posGem = rng.nextDouble() * size.height;
-      add(new Gem( size.width, posGem));
+    if (!frozen) {
 
-      timerG = Normal.quantile(rng.nextDouble(), mean: 0, variance: 0.7) + 2;
-    }
-    if (timerS < 0) {
-      double posSnake = rng.nextDouble() * size.height;
-      add(new Snake( size.width, posSnake));
+      timer -= t;
+      timerS -= t;
+      timerG -= t;
+      if (timerG < 0) {
+        double posGem = rng.nextDouble() * size.height;
+        add(new Gem(size.width, posGem));
 
-      timerS = Normal.quantile(rng.nextDouble(), mean: 0, variance: 0.3) + 1;
-    }
-    if (timer < 0) {
+        timerG = Normal.quantile(rng.nextDouble(), mean: 0, variance: 0.7) + 2;
+      }
+      if (timerS < 0) {
+        double posSnake = rng.nextDouble() * size.height;
+        add(new Snake(size.width, posSnake));
 
-      timer = Normal.quantile(rng.nextDouble(), mean: 0, variance: 0.15) + 0.5;
-      int pattern = rng.nextInt(coinPatterns.length);
-      print(pattern);
-      var coinPattern = coinPatterns[pattern];
-      double patternHeight = rng.nextDouble() * (size.height - 30.0 * coinPattern.length - 10.0);
+        timerS = Normal.quantile(rng.nextDouble(), mean: 0, variance: 0.3) + 1;
+      }
+      if (timer < 0) {
+        timer =
+            Normal.quantile(rng.nextDouble(), mean: 0, variance: 0.15) + 0.5;
+        int pattern = rng.nextInt(coinPatterns.length);
+        print(pattern);
+        var coinPattern = coinPatterns[pattern];
+        double patternHeight = rng.nextDouble() *
+            (size.height - 30.0 * coinPattern.length - 10.0);
 
-      for (var i = 0; i < coinPattern.length; i++) {
-        for (var j = 0; j < coinPattern[i].length; j++) {
-          if (coinPattern[i][j] == 1) {
-            add(new Coin(
-                size.width + j * 30.0 + 10, patternHeight + i * 30.0 + 10));
+        for (var i = 0; i < coinPattern.length; i++) {
+          for (var j = 0; j < coinPattern[i].length; j++) {
+            if (coinPattern[i][j] == 1) {
+              add(new Coin(
+                  size.width + j * 30.0 + 10, patternHeight + i * 30.0 + 10));
+            }
           }
         }
       }
     }
-    if (collected){
-      //add(new coinCollected(collectedX, collectedY));
-      //collected = false;
-    }
 
-    if(updateScore) {
 
-      if (specialMessage) {
-        textPainterScore = TextPainter(text: TextSpan(
-            text: message,
+      if (updateScore) {
+        if (specialMessage) {
+          textPainterScore = TextPainter(text: TextSpan(
+              text: message,
+              style: TextStyle(
+                  color: Colors.white, fontFamily: "pixelFont", fontSize: 32)),
+              textDirection: TextDirection.ltr);
+          textPainterScore.layout(
+            minWidth: 0,
+            maxWidth: size.width,
+          );
+          positionScore = Offset(size.width / 2 - textPainterScore.width / 2,
+              size.height * 0.05 - textPainterScore.height / 2);
+          updateScore = false;
+        }
+        else if (eliminateScoreFlash) {
+          textPainterScore = TextPainter(text: TextSpan(
+              text: "Score: " + score.toString(),
+              style: TextStyle(
+                  color: Colors.white, fontFamily: "pixelFont", fontSize: 32)),
+              textDirection: TextDirection.ltr);
+          textPainterScore.layout(
+            minWidth: 0,
+            maxWidth: size.width,
+          );
+          positionScore = Offset(size.width / 2 - textPainterScore.width / 2,
+              size.height * 0.05 - textPainterScore.height / 2);
+          updateScore = false;
+        }
+      }
+      else if (updatehighScore) {
+        textPainterHighScore = TextPainter(text: TextSpan(
+            text: "Highest: " + highScore.toString(),
             style: TextStyle(
-                color: Colors.white, fontFamily: "pixelFont", fontSize: 32)),
+                color: Colors.yellow, fontFamily: "pixelFont", fontSize: 20)),
             textDirection: TextDirection.ltr);
-        textPainterScore.layout(
+        textPainterHighScore.layout(
           minWidth: 0,
           maxWidth: size.width,
         );
-        positionScore = Offset(size.width / 2 - textPainterScore.width / 2,
-            size.height * 0.05 - textPainterScore.height / 2);
-        updateScore = false;
+        positionHighScore =
+            Offset(size.width / 2 - textPainterHighScore.width / 2,
+                size.height * 0.08 - textPainterHighScore.height / 2);
+        updatehighScore = false;
       }
-      else if (eliminateScoreFlash){
-        textPainterScore = TextPainter(text: TextSpan(
-            text: "Score: " + score.toString(),
-            style: TextStyle(
-                color: Colors.white, fontFamily: "pixelFont", fontSize: 32)),
-            textDirection: TextDirection.ltr);
-        textPainterScore.layout(
-          minWidth: 0,
-          maxWidth: size.width,
-        );
-        positionScore = Offset(size.width / 2 - textPainterScore.width / 2,
-            size.height * 0.05 - textPainterScore.height / 2);
-        updateScore = false;
-      }
-      }
-    else if (updatehighScore) {
-
-      textPainterHighScore = TextPainter(text: TextSpan(
-          text: "Highest: " + highScore.toString(),
-          style: TextStyle(
-              color: Colors.yellow, fontFamily: "pixelFont", fontSize: 20)),
-          textDirection: TextDirection.ltr);
-      textPainterHighScore.layout(
-        minWidth: 0,
-        maxWidth: size.width,
-      );
-      positionHighScore = Offset(size.width / 2 - textPainterHighScore.width / 2,
-          size.height * 0.08 - textPainterHighScore.height / 2);
-      updatehighScore = false;
-    }
     }
 
 
-
-  @override
-  void render(Canvas c){
-    super.render(c);
-    textPainterScore.paint(c, positionScore);
-    textPainterHighScore.paint(c, positionHighScore);
+    @override
+    void render(Canvas c) {
+      super.render(c);
+      textPainterScore.paint(c, positionScore);
+      textPainterHighScore.paint(c, positionHighScore);
+    }
   }
-
-}
