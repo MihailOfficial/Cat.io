@@ -1,4 +1,3 @@
-//nword
 import 'dart:io';
 import 'dart:ui';
 
@@ -62,12 +61,12 @@ class Bg extends Component with Resizable {
 String message;
 bool specialMessage = false;
 bool eliminateScoreFlash = false;
-bool snakeDeath = false;
+bool spikeDeath = false;
 bool frozen = true;
-class Cat extends AnimationComponent with Resizable {
+class CharacterSprite extends AnimationComponent with Resizable {
   double speedY = 0.0;
 
-  Cat()
+  CharacterSprite()
       : super.sequenced(SIZE*1.5 , SIZE*1.5, 'Running (32 x 32).png', 6,
       textureWidth: 32.0, textureHeight: 32.0) {
     this.anchor = Anchor.center;
@@ -118,7 +117,7 @@ class Cat extends AnimationComponent with Resizable {
         updatehighScore = true;
         reset();
       }
-      if (snakeDeath){
+      if (spikeDeath){
         updatehighScore = true;
         reset();
       }
@@ -128,10 +127,11 @@ class Cat extends AnimationComponent with Resizable {
   }
 
   onTap() {
+    paused = false;
     specialMessage = false;
     updateScore = true;
     updatehighScore = true;
-    snakeDeath = false;
+    spikeDeath = false;
     if (frozen) {
       frozen = false;
       return;
@@ -193,12 +193,12 @@ class Coin extends AnimationComponent with Resizable {
   }
 }
 
-class Snake extends AnimationComponent with Resizable {
+class Spike extends AnimationComponent with Resizable {
   double speedX = 200.0;
   double posX = 0;
   double posY;
 
-  Snake(double posX, double posY)
+  Spike(double posX, double posY)
       : super.sequenced(SIZE, SIZE, 'Spike.png', 8,
       textureWidth: 38, textureHeight: 38) {
     this.anchor = Anchor.center;
@@ -225,8 +225,10 @@ class Snake extends AnimationComponent with Resizable {
       this.x = -200000;
       this.y = -200000;
       score=0;
+      specialMessage = true;
+      message ="Sliced!";
       updateScore = true;
-      snakeDeath = true;
+      spikeDeath = true;
 
       return;
     }
@@ -273,6 +275,35 @@ class Gem extends AnimationComponent with Resizable {
     this.x -= speedX * t;
   }
 }
+bool paused = false;
+class PauseButton extends AnimationComponent with Resizable {
+  double speedX = 200.0;
+  double posX = 50;
+  double posY = 50;
+
+  PauseButton()
+      : super.sequenced(SIZE / 1.3, SIZE / 1.3, 'cat.png', 4,
+      textureWidth: 16, textureHeight: 16) {
+    this.anchor = Anchor.center;
+    this.x = posX;
+    this.y = posY;
+  }
+
+  @override
+  void resize(Size size) {
+
+  }
+
+
+  @override
+  void update(double t) {
+  }
+
+  onTap() {
+    paused = true;
+    print("paused");
+  }
+}
 
 
 class coinCollected extends AnimationComponent with Resizable {
@@ -312,10 +343,10 @@ class coinCollected extends AnimationComponent with Resizable {
 bool updatehighScore = false;
 class MyGame extends BaseGame {
   var rng;
-  Cat cat;
-  double timer;
-  double timerS;
-  double timerG;
+  CharacterSprite character;
+  double timerCharacter;
+  double timerSpike;
+  double timerGem;
   List coinPatterns = [];
   TextPainter textPainterScore;
   TextPainter textPainterHighScore;
@@ -349,11 +380,13 @@ class MyGame extends BaseGame {
 
   MyGame(Size size) {
     add(parallaxComponent);
-    add(cat = Cat());
+    add(character = CharacterSprite());
+
+
     this.rng = new Random();
-    this.timer = Normal.quantile(rng.nextDouble(), mean: 2, variance: 0.5);
-    this.timerS = Normal.quantile(rng.nextDouble(), mean: 2, variance: 0.5);
-    this.timerG = Normal.quantile(rng.nextDouble(), mean: 3, variance: 0.7);
+    this.timerCharacter = Normal.quantile(rng.nextDouble(), mean: 2, variance: 0.5);
+    this.timerSpike = Normal.quantile(rng.nextDouble(), mean: 2, variance: 0.5);
+    this.timerGem = Normal.quantile(rng.nextDouble(), mean: 3, variance: 0.7);
     coinPatterns.add(coinPattern1);
     coinPatterns.add(coinPattern2);
     coinPatterns.add(coinPattern3);
@@ -386,7 +419,7 @@ class MyGame extends BaseGame {
 
   @override
   void onTapDown(TapDownDetails details) {
-    cat.onTap();
+    character.onTap();
   }
 
   @override
@@ -395,29 +428,32 @@ class MyGame extends BaseGame {
   }
 
   void update(double t) {
-    super.update(t);
+    if (!paused){
+      super.update(t);
+    }
+
     if (gemCollected >= 0) {
       gemCollected--;
     }
     if (!frozen) {
 
-      timer -= t;
-      timerS -= t;
-      timerG -= t;
-      if (timerG < 0) {
+      timerCharacter -= t;
+      timerSpike -= t;
+      timerGem -= t;
+      if (timerGem < 0) {
         double posGem = rng.nextDouble() * size.height;
         add(new Gem(size.width, posGem));
 
-        timerG = Normal.quantile(rng.nextDouble(), mean: 0, variance: 0.7) + 2;
+        timerGem = Normal.quantile(rng.nextDouble(), mean: 0, variance: 0.7) + 2;
       }
-      if (timerS < 0) {
+      if (timerSpike < 0) {
         double posSnake = rng.nextDouble() * size.height;
-        add(new Snake(size.width, posSnake));
+        add(new Spike(size.width, posSnake));
 
-        timerS = Normal.quantile(rng.nextDouble(), mean: 0, variance: 0.3) + 1;
+        timerSpike = Normal.quantile(rng.nextDouble(), mean: 0, variance: 0.3) + 1;
       }
-      if (timer < 0) {
-        timer =
+      if (timerCharacter  < 0) {
+        timerCharacter =
             Normal.quantile(rng.nextDouble(), mean: 0, variance: 0.15) + 0.5;
         int pattern = rng.nextInt(coinPatterns.length);
         print(pattern);
@@ -482,6 +518,8 @@ class MyGame extends BaseGame {
                 size.height * 0.08 - textPainterHighScore.height / 2);
         updatehighScore = false;
       }
+    PauseButton pauseButton;
+    add(pauseButton = PauseButton());
     }
 
 
