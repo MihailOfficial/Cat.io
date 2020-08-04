@@ -78,8 +78,6 @@ class CharacterSprite extends AnimationComponent with Resizable {
       textureWidth: 32.0, textureHeight: 32.0) {
     this.anchor = Anchor.center;
     frozen = true;
-
-
   }
 
   Position get velocity => Position(300.0, speedY);
@@ -292,8 +290,6 @@ class PauseButton extends AnimationComponent with Resizable {
       textureWidth: 14, textureHeight: 14) {
     place();
     this.anchor = Anchor.center;
-
-
   }
   void place(){
     this.x = width;
@@ -400,7 +396,7 @@ class MyGame extends BaseGame {
   MyGame(Size size) {
     add(parallaxComponent);
     add(character = CharacterSprite());
-
+    add(pauseButton = PauseButton());
 
     this.rng = new Random();
     this.timerCharacter = Normal.quantile(rng.nextDouble(), mean: 2, variance: 0.5);
@@ -448,7 +444,7 @@ class MyGame extends BaseGame {
 
 
   void update(double t) {
-
+   //print(components.length);
   if(!paused) {
     super.update(t);
   }
@@ -539,8 +535,6 @@ class MyGame extends BaseGame {
                 heightPos * 0.08 - textPainterHighScore.height / 2);
         updatehighScore = false;
       }
-
-    add(pauseButton = PauseButton());
     }
 
 
@@ -549,6 +543,7 @@ class MyGame extends BaseGame {
       super.render(c);
       textPainterScore.paint(c, positionScore);
       textPainterHighScore.paint(c, positionHighScore);
+      pauseButton.render(c);
     }
 
   }
