@@ -17,6 +17,7 @@ import 'package:flame/text_config.dart';
 import 'package:flame/util.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flame/flame.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:math';
@@ -33,6 +34,7 @@ bool updateScore = false;
 int highScore = 0;
 int gemCollected = -1;
 MyGame game;
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   //SharedPreferences storage = await SharedPreferences.getInstance();
@@ -41,8 +43,11 @@ void main() async {
   await flameUtil.fullScreen();
   final size = await Flame.util.initialDimensions();
   game = MyGame(size);
-  //highScore = game.storage.getInt('highscore') ?? 0;
+
   runApp(game.widget);
+  TapGestureRecognizer tapper = TapGestureRecognizer();
+  tapper.onTapDown = game.onTapDown;
+  flameUtil.addGestureRecognizer(tapper);
 }
 
 class Bg extends Component with Resizable {
@@ -50,13 +55,15 @@ class Bg extends Component with Resizable {
 
   @override
   void render(Canvas c) {
-    c.drawRect(Rect.fromLTWH(0.0, 0.0, 50, 50), _paint);
+
+
   }
 
   @override
   void update(double t) {
     // TODO: implement update
   }
+
 }
 String message;
 bool specialMessage = false;
@@ -79,10 +86,6 @@ class CharacterSprite extends AnimationComponent with Resizable {
   }
 
   Position get velocity => Position(300.0, speedY);
-
-
-
-
 
   reset() {
     this.x = size.width / 2;
@@ -136,8 +139,10 @@ class CharacterSprite extends AnimationComponent with Resizable {
       frozen = false;
       return;
     }
-    speedY = speedY + BOOST;
-    //speedY = -300;
+    if (!paused) {
+      speedY = speedY + BOOST;
+      //speedY = -300;
+    }
   }
 }
 double compx = 0.0;
@@ -157,11 +162,7 @@ class Coin extends AnimationComponent with Resizable {
     this.x = posX;
     this.y = posY;
   }
-  reset() {
-    this.x = size.width;
 
-    angle = 0.0;
-  }
 
   @override
   void update(double t) {
@@ -189,7 +190,9 @@ class Coin extends AnimationComponent with Resizable {
       return;
     }
     super.update(t);
-    this.x -= speedX * t;
+    if (!paused) {
+      this.x -= speedX * t;
+    }
   }
 }
 
@@ -205,11 +208,7 @@ class Spike extends AnimationComponent with Resizable {
     this.x = posX;
     this.y = posY;
   }
-  reset() {
-    this.x = size.width;
 
-    angle = 0.0;
-  }
 
   @override
   void update(double t) {
@@ -233,7 +232,9 @@ class Spike extends AnimationComponent with Resizable {
       return;
     }
     super.update(t);
-    this.x -= speedX * t;
+
+      this.x -= speedX * t;
+
   }
 }
 class Gem extends AnimationComponent with Resizable {
@@ -247,10 +248,6 @@ class Gem extends AnimationComponent with Resizable {
     this.anchor = Anchor.center;
     this.x = posX;
     this.y = posY;
-  }
-  reset() {
-    this.x = size.width;
-    angle = 0.0;
   }
 
   @override
@@ -272,36 +269,49 @@ class Gem extends AnimationComponent with Resizable {
       return;
     }
     super.update(t);
-    this.x -= speedX * t;
+
+      this.x -= speedX * t;
+
   }
 }
 bool paused = false;
+double height = 0;
+double width = 0;
+double heighttemp = 0;
+double widthtemp = 0;
+double heighttemp1 = 0;
+double widthtemp1 = 0;
 class PauseButton extends AnimationComponent with Resizable {
-  double speedX = 200.0;
-  double posX = 50;
-  double posY = 50;
 
+  Rect pauseRect;
   PauseButton()
-      : super.sequenced(SIZE / 1.3, SIZE / 1.3, 'cat.png', 4,
-      textureWidth: 16, textureHeight: 16) {
+      : super.sequenced(SIZE / 1.3, SIZE / 1.3, 'pause.png', 1,
+      textureWidth: 14, textureHeight: 14) {
+    place();
     this.anchor = Anchor.center;
-    this.x = posX;
-    this.y = posY;
-  }
 
-  @override
-  void resize(Size size) {
 
   }
+  void place(){
+    this.x = width;
+    this.y = height;
 
 
-  @override
-  void update(double t) {
+    pauseRect = Rect.fromLTWH(widthtemp,  heighttemp, 40,40);
+
   }
-
-  onTap() {
+  void onTapDown() {
+    print("test");
     paused = true;
-    print("paused");
+  }
+  void resize(Size size) {
+    super.resize(size);
+    height = size.height-50;
+    width = size.width/2;
+    heighttemp = size.height-70;
+    widthtemp = (size.width/2)-20;
+
+    place();
   }
 }
 
@@ -352,7 +362,7 @@ class MyGame extends BaseGame {
   TextPainter textPainterHighScore;
   Offset positionScore;
   Offset positionHighScore;
-
+  PauseButton pauseButton;
   var coinPattern1 = [[1, 0, 1],
     [0, 1, 0],
     [1, 0, 1]];
@@ -418,8 +428,12 @@ class MyGame extends BaseGame {
   }
 
   @override
-  void onTapDown(TapDownDetails details) {
+  void onTapDown(TapDownDetails d) {
     character.onTap();
+
+    if (pauseButton.pauseRect.contains(d.globalPosition)){
+    pauseButton.onTapDown();
+    }
   }
 
   @override
@@ -428,14 +442,14 @@ class MyGame extends BaseGame {
   }
 
   void update(double t) {
-    if (!paused){
-      super.update(t);
-    }
+  if(!paused) {
+    super.update(t);
+  }
 
     if (gemCollected >= 0) {
       gemCollected--;
     }
-    if (!frozen) {
+    if (!frozen && !paused) {
 
       timerCharacter -= t;
       timerSpike -= t;
@@ -447,8 +461,8 @@ class MyGame extends BaseGame {
         timerGem = Normal.quantile(rng.nextDouble(), mean: 0, variance: 0.7) + 2;
       }
       if (timerSpike < 0) {
-        double posSnake = rng.nextDouble() * size.height;
-        add(new Spike(size.width, posSnake));
+        double posCharacter = rng.nextDouble() * size.height;
+        add(new Spike(size.width, posCharacter));
 
         timerSpike = Normal.quantile(rng.nextDouble(), mean: 0, variance: 0.3) + 1;
       }
@@ -456,7 +470,7 @@ class MyGame extends BaseGame {
         timerCharacter =
             Normal.quantile(rng.nextDouble(), mean: 0, variance: 0.15) + 0.5;
         int pattern = rng.nextInt(coinPatterns.length);
-        print(pattern);
+
         var coinPattern = coinPatterns[pattern];
         double patternHeight = rng.nextDouble() *
             (size.height - 30.0 * coinPattern.length - 10.0);
@@ -518,7 +532,7 @@ class MyGame extends BaseGame {
                 size.height * 0.08 - textPainterHighScore.height / 2);
         updatehighScore = false;
       }
-    PauseButton pauseButton;
+
     add(pauseButton = PauseButton());
     }
 
@@ -529,4 +543,6 @@ class MyGame extends BaseGame {
       textPainterScore.paint(c, positionScore);
       textPainterHighScore.paint(c, positionHighScore);
     }
+
   }
+
