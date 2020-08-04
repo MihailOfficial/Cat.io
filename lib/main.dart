@@ -170,7 +170,7 @@ class Coin extends AnimationComponent with Resizable {
       this.x = -200000;
     }
     if (x < 0) {
-      destroy();
+      this.destroyOnFinish = true;
     }
     double dist = sqrt((compy-y)*(compy-y) + (compx-x)*(compx-x));
 
@@ -216,7 +216,7 @@ class Spike extends AnimationComponent with Resizable {
       this.x = -200000;
     }
     if (x < 0 ) {
-      destroy();
+      this.destroyOnFinish = true;
     }
     double dist = sqrt((compy-y)*(compy-y) + (compx-x)*(compx-x));
 
@@ -256,7 +256,7 @@ class Gem extends AnimationComponent with Resizable {
       this.x = -200000;
     }
     if (x < 0) {
-      destroy();
+      this.destroyOnFinish = true;
     }
     double dist = sqrt((compy-y)*(compy-y) + (compx-x)*(compx-x));
 
