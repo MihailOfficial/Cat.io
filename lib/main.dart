@@ -141,8 +141,7 @@ class CharacterSprite extends AnimationComponent with Resizable {
       return;
     }
     if (!paused) {
-      speedY = speedY + BOOST;
-
+      speedY = BOOST.toDouble();
     }
   }
 }
@@ -216,7 +215,7 @@ class Spike extends AnimationComponent with Resizable {
     if (frozen){
       this.x = -200000;
     }
-    if (x < 0 ) {
+    if (x < 0) {
       this.destroyOnFinish = true;
     }
     double dist = sqrt((compy-y)*(compy-y) + (compx-x)*(compx-x));
