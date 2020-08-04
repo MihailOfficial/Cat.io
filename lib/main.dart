@@ -78,10 +78,7 @@ class CharacterSprite extends AnimationComponent with Resizable {
       textureWidth: 32.0, textureHeight: 32.0) {
     this.anchor = Anchor.center;
     frozen = true;
-    specialMessage = true;
-    message = "Tap anywhere!";
-    updateScore = true;
-    eliminateScoreFlash = true;
+
 
   }
 
@@ -90,6 +87,8 @@ class CharacterSprite extends AnimationComponent with Resizable {
   reset() {
     this.x = size.width / 2;
     this.y = size.height / 2;
+    widthPos = size.width;
+    heightPos = size.height;
     speedY = 0;
     angle = 0.0;
     frozen = true;
@@ -98,6 +97,10 @@ class CharacterSprite extends AnimationComponent with Resizable {
 
   @override
   void resize(Size size) {
+    specialMessage = true;
+    message = "Tap anywhere!";
+    updateScore = true;
+    eliminateScoreFlash = true;
     super.resize(size);
     reset();
     frozen = true;
@@ -141,7 +144,7 @@ class CharacterSprite extends AnimationComponent with Resizable {
     }
     if (!paused) {
       speedY = speedY + BOOST;
-      //speedY = -300;
+
     }
   }
 }
@@ -190,9 +193,9 @@ class Coin extends AnimationComponent with Resizable {
       return;
     }
     super.update(t);
-    if (!paused) {
+
       this.x -= speedX * t;
-    }
+
   }
 }
 
@@ -351,7 +354,13 @@ class coinCollected extends AnimationComponent with Resizable {
   }
 }
 bool updatehighScore = false;
+double widthPos = 0;
+double heightPos = 0;
 class MyGame extends BaseGame {
+  @override
+  void resize(Size size) {
+    super.resize(size);
+  }
   var rng;
   CharacterSprite character;
   double timerCharacter;
@@ -436,12 +445,10 @@ class MyGame extends BaseGame {
     }
   }
 
-  @override
-  void resize(Size size) {
-    super.resize(size);
-  }
+
 
   void update(double t) {
+
   if(!paused) {
     super.update(t);
   }
@@ -455,14 +462,14 @@ class MyGame extends BaseGame {
       timerSpike -= t;
       timerGem -= t;
       if (timerGem < 0) {
-        double posGem = rng.nextDouble() * size.height;
-        add(new Gem(size.width, posGem));
+        double posGem = rng.nextDouble() * heightPos;
+        add(new Gem(widthPos, posGem));
 
         timerGem = Normal.quantile(rng.nextDouble(), mean: 0, variance: 0.7) + 2;
       }
       if (timerSpike < 0) {
-        double posCharacter = rng.nextDouble() * size.height;
-        add(new Spike(size.width, posCharacter));
+        double posCharacter = rng.nextDouble() * heightPos;
+        add(new Spike(widthPos, posCharacter));
 
         timerSpike = Normal.quantile(rng.nextDouble(), mean: 0, variance: 0.3) + 1;
       }
@@ -473,13 +480,13 @@ class MyGame extends BaseGame {
 
         var coinPattern = coinPatterns[pattern];
         double patternHeight = rng.nextDouble() *
-            (size.height - 30.0 * coinPattern.length - 10.0);
+            (heightPos - 30.0 * coinPattern.length - 10.0);
 
         for (var i = 0; i < coinPattern.length; i++) {
           for (var j = 0; j < coinPattern[i].length; j++) {
             if (coinPattern[i][j] == 1) {
               add(new Coin(
-                  size.width + j * 30.0 + 10, patternHeight + i * 30.0 + 10));
+                  widthPos + j * 30.0 + 10, patternHeight + i * 30.0 + 10));
             }
           }
         }
@@ -496,10 +503,10 @@ class MyGame extends BaseGame {
               textDirection: TextDirection.ltr);
           textPainterScore.layout(
             minWidth: 0,
-            maxWidth: size.width,
+            maxWidth: widthPos,
           );
-          positionScore = Offset(size.width / 2 - textPainterScore.width / 2,
-              size.height * 0.05 - textPainterScore.height / 2);
+          positionScore = Offset(widthPos / 2 - textPainterScore.width / 2,
+              heightPos * 0.05 - textPainterScore.height / 2);
           updateScore = false;
         }
         else if (eliminateScoreFlash) {
@@ -510,10 +517,10 @@ class MyGame extends BaseGame {
               textDirection: TextDirection.ltr);
           textPainterScore.layout(
             minWidth: 0,
-            maxWidth: size.width,
+            maxWidth: widthPos,
           );
-          positionScore = Offset(size.width / 2 - textPainterScore.width / 2,
-              size.height * 0.05 - textPainterScore.height / 2);
+          positionScore = Offset(widthPos / 2 - textPainterScore.width / 2,
+              heightPos * 0.05 - textPainterScore.height / 2);
           updateScore = false;
         }
       }
@@ -525,11 +532,11 @@ class MyGame extends BaseGame {
             textDirection: TextDirection.ltr);
         textPainterHighScore.layout(
           minWidth: 0,
-          maxWidth: size.width,
+          maxWidth: widthPos,
         );
         positionHighScore =
-            Offset(size.width / 2 - textPainterHighScore.width / 2,
-                size.height * 0.08 - textPainterHighScore.height / 2);
+            Offset(widthPos / 2 - textPainterHighScore.width / 2,
+                heightPos * 0.08 - textPainterHighScore.height / 2);
         updatehighScore = false;
       }
 
